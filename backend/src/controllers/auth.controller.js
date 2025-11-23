@@ -2,6 +2,7 @@ import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import {generateToken} from '../lib/utils.js';
 import cloudinary from '../lib/cloudnary.js';
+import transporter from '../lib/sendMail.js';
 
 export const signup = async (req, res) => {
  const {email, fullName, password} = req.body;
@@ -17,9 +18,16 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword =  await bcrypt.hash(password, salt);
     const newUser = new User({ email, fullName, password: hashedPassword });
+   
     if (newUser){
         generateToken(newUser._id, res);
         await newUser.save();
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to:  process.env.EMAIL_TO_USER,
+            subject: 'A new user is signed up for your Chat-App',
+            text: `Name for that new user: ${newUser.fullName} & their email id:  ${newUser.email}`
+          });
         return res.status(201).json({_id: newUser._id, email: newUser.email, fullName: newUser.fullName, profilePic: newUser.profilePic});
     }
     else{
