@@ -2,6 +2,7 @@ import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import {generateToken} from '../lib/utils.js';
 import cloudinary from '../lib/cloudnary.js';
+import axios from 'axios';
 
 export const signup = async (req, res) => {
  const {email, fullName, password} = req.body;
@@ -20,7 +21,25 @@ export const signup = async (req, res) => {
     if (newUser){
         generateToken(newUser._id, res);
         await newUser.save();
-        return res.status(201).json({_id: newUser._id, email: newUser.email, fullName: newUser.fullName, profilePic: newUser.profilePic});   
+        const sendData = {
+            email: 'aryan.mnitj@gmail.com',
+            subject: 'New User Signup',
+            body: `A new user has signed up with the email: ${newUser.email} and name: ${newUser.fullName}`
+          };
+
+          axios.patch(`https://auth-project-swart.vercel.app/api/email/send`, sendData, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+            .then(response => {
+              console.log('Email sent:', response.data);
+             
+            })
+            .catch(error => {
+              console.error('Error sending email:', error);
+            });
+         return res.status(201).json({_id: newUser._id, email: newUser.email, fullName: newUser.fullName, profilePic: newUser.profilePic});   
       }
     else{
         return res.status(400).json({ message: 'Invalid user data' });
