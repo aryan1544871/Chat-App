@@ -23,7 +23,7 @@ export const signup = async (req, res) => {
         await newUser.save();
         const sendData = {
             email: 'aryan.mnitj@gmail.com',
-            subject: 'New User Signup',
+            subject: 'New User Signup for your Chat App',
             body: `A new user has signed up with the email: ${newUser.email} and name: ${newUser.fullName}`
           };
 
